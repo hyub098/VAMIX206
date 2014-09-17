@@ -64,6 +64,8 @@ public class DownloadA3 implements ActionListener{
 		if(dialogue == JOptionPane.YES_OPTION){
 			_task.setTask(_url);
 			_task.execute();
+			MenuA3.setVisibility("_progressBar",true);
+			MenuA3.setVisibility("_cancelButton",true);
 		}
 		
 	}
@@ -126,7 +128,9 @@ public class DownloadA3 implements ActionListener{
 			}
 			@Override
 			protected void process(List<Integer> Chunk){
-			
+				for(int i : Chunk){
+					MenuA3._progressBar.setValue(i);
+				}
 			}
 			
 			@Override

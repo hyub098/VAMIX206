@@ -9,10 +9,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -31,26 +33,18 @@ public class MenuA3 extends JFrame implements ActionListener{
 	private JTextField _urlTxt = new JTextField();
 	private JLabel _urlLabel = new JLabel("Enter url below to downlaod file:");
 	private JLabel _editLabel = new JLabel("Open media file to edit:");
-	
+	protected static JProgressBar _progressBar = new JProgressBar();
+	private static JButton _cancelButton = new JButton("Cancel");
+	JDialog _processLog = new JDialog();
 
 	public MenuA3(){
-		
-		try
-	    {
-	            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-	            UIManager.put(_menuTab,Color.GREEN);
-
-	    } catch (Exception ee){
-	        ee.printStackTrace();
-	    }
 		this.initializeGUI();
 		this.initializeDownload();
 		this.initializeEdit();
 	
-
+		//Add tabs
 		_menuTab.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=25 marginheight=5>Download</body></html>",_downloadPanel);
 	 	_menuTab.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=25 marginheight=5>Edit</body></html>",_editPanel);
-
 	 	this.add(_menuTab,BorderLayout.CENTER);
 	 	
 	 	//Set exit on close 
@@ -58,6 +52,11 @@ public class MenuA3 extends JFrame implements ActionListener{
 	 	//display to true
 		this.setVisible(true);
 		
+	}
+	public static void setVisibility(String componentName,boolean visiblity){
+		if(componentName.equals("_progressBar")){
+			_progressBar.setVisible(visiblity);
+		}
 	}
 	private void initializeEdit(){
 		
@@ -83,15 +82,32 @@ public class MenuA3 extends JFrame implements ActionListener{
 	 	
 	 	//Set size and location for components
 	 	_downloadButton.setBounds(380, 120, 80, 20);
+	 	_cancelButton.setBounds(185,180,100,30);
 	 	_urlTxt.setBounds(20, 120, 350, 20);
 	 	_urlLabel.setBounds(20, 100, 400, 20);
+	 	_urlLabel.setFont(new Font("Arial",Font.BOLD,14));
 	 	copyrightLabel.setBounds(20,40,400,50);
 	 	copyrightLabel.setText("<html>Please make sure you are only downloading Open-Source file:</html>");
 	 	copyrightLabel.setFont(new Font("Arial",Font.BOLD,16));
+	 	_progressBar.setBounds(12, 150, 470, 20);
+	 	_progressBar.setValue(0);
+	 	_progressBar.setMaximum(100);
+	 //	_progressBar.setVisible(false);
+	 	_cancelButton.setVisible(false);
+
 	 	//Add actionlisteners to required componenets
 	 	_downloadButton.addActionListener(this);
 	 	
+	 	_processLog.setTitle("here");
+	 	_processLog.add(_progressBar);
+	 	_processLog.add(_cancelButton);
+	 	_processLog.setMinimumSize(new Dimension(300,300));
+	 	_processLog.setLocationRelativeTo(this);
+	 	_processLog.setVisible(true);
+
 		//Add to panel and frame
+	 	_downloadPanel.add(_cancelButton);
+	 	//_downloadPanel.add(_progressBar);
 	 	_downloadPanel.add(copyrightLabel);
 	 	_downloadPanel.add(_urlLabel);
 	 	_downloadPanel.add(_urlTxt);
@@ -121,8 +137,6 @@ public class MenuA3 extends JFrame implements ActionListener{
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-    
-    
 		new MenuA3();
 	}
 
