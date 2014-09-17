@@ -1,5 +1,6 @@
 package vamixA3;
 
+import java.util.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -8,14 +9,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 
 public class DownloadA3 implements ActionListener{
-	private Process process;
+	private Process _process;
+	private String _fileName;
 	private String _url;
+	private DownloadTask _task = new DownloadTask();
 	
 	public DownloadA3(String url){
 		String[] tmp = url.split("/");
-		_url = tmp[tmp.length-1];
+		_fileName = tmp[tmp.length-1];
+		_url = url;
 		
 		this.startDownload();
 		
@@ -24,9 +29,9 @@ public class DownloadA3 implements ActionListener{
 	private void startDownload(){
 		
 		
-		String cmd =  "test -f " + _url + " && echo \"found\" || echo \"not found\"";
+		String cmd =  "test -f " + _fileName + " && echo \"found\" || echo \"not found\"";
 		cmd = this.execCmd(cmd);
-		int dialogue = JOptionPane.showConfirmDialog(null, "Please Confirm this is Open Source file","Open Source?",JOptionPane.YES_NO_OPTION);
+		int dialogue = JOptionPane.showConfirmDialog(null, "Please Confirm this is Open-Source file","Open Source?",JOptionPane.YES_NO_OPTION);
 		
 		
 		//if file found, ask if override or resume
@@ -36,34 +41,31 @@ public class DownloadA3 implements ActionListener{
 			
 			//Check if open source
 			if(dialogue == JOptionPane.YES_OPTION){
-				System.out.println("found");
-	/* 			exist.setVisible(true);
-				resume.setVisible(true);
-				override.setVisible(true);
-				Enter.setVisible(false); */
+				//override existing file
+				if(userChoice == 0){
+					cmd = "rm" + _fileName;
+					cmd = this.execCmd(cmd);
+					_task.setTask(_url);
+					_task.execute();
+				}
+				//resume existing file
+				else if (userChoice == 1){
+					_task.setTask(_url);
+					_task.execute();
+				}
 			}
 			else{
-	//			copyright.setVisible(true);
+				JOptionPane.showMessageDialog(null, "Please Download Open-Source file only");
 			} 
 			return;
 		}
 
-		//check copyright
+		//check copyright for file not found
 		if(dialogue == JOptionPane.YES_OPTION){
-			System.out.println("Not found");
-
-	/*		Enter.setVisible(false);
-			Cancel.setVisible(true);
-			pb.setVisible(true);
-			
-			//execute download in background
-			task.setTask(urlTxt.getText());
-			task.execute();		
+			_task.setTask(_url);
+			_task.execute();
 		}
-		else{
-			copyright.setVisible(true);
-		} 		*/
-	}
+		
 	}
 
 	private String execCmd(String cmd){
@@ -73,8 +75,8 @@ public class DownloadA3 implements ActionListener{
 			
 		
 		
-			process = builder.start();
-			InputStream stdout = process.getInputStream();
+			_process = builder.start();
+			InputStream stdout = _process.getInputStream();
 			BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
 			String output = stdoutBuffered.readLine();
 			String line = null;
@@ -92,5 +94,46 @@ public class DownloadA3 implements ActionListener{
 		// TODO Auto-generated method stub
 		
 	}
+	//Swing worker for download
+	class DownloadTask extends SwingWorker<Void, Integer> {
+			
+			private String _url;
+			
+			public void setTask(String url){
+				_url = url;
+			}
+			
+			@Override
+			protected Void doInBackground() throws Exception {
+				try {
+					
+					
+					String cmd = "wget -c --progress=dot " + _url;
+					ProcessBuilder builder = new ProcessBuilder("/bin/bash","-c",cmd);
+					builder.redirectErrorStream(true);
+					Process process;
+				
+					process = builder.start();
+					InputStream stdout = process.getInputStream();
+					BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
+				
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+				
+			}
+			@Override
+			protected void process(List<Integer> Chunk){
+			
+			}
+			
+			@Override
+			protected void done(){
+	
+			}
+		}
+
 
 }
