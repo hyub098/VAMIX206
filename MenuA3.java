@@ -7,6 +7,10 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -19,8 +23,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.TabbedPaneUI;
-import javax.swing.plaf.metal.MetalTabbedPaneUI.TabbedPaneLayout;
+import javax.swing.plaf.ColorUIResource;
+
 
 public class MenuA3 extends JFrame implements ActionListener{
 	
@@ -34,10 +38,17 @@ public class MenuA3 extends JFrame implements ActionListener{
 	private JLabel _urlLabel = new JLabel("Enter url below to downlaod file:");
 	private JLabel _editLabel = new JLabel("Open media file to edit:");
 	protected static JProgressBar _progressBar = new JProgressBar();
-	private static JButton _cancelButton = new JButton("Cancel");
-	JDialog _processLog = new JDialog();
+	protected static JButton _cancelButton = new JButton("Cancel");
+	protected static JDialog _processLog = new JDialog();
+	protected static JLabel _waitLabel = new JLabel();
+	static SwingDownload _task = new SwingDownload("null");
+	protected static boolean _result;
+	private Process _process;
 
+
+	
 	public MenuA3(){
+		
 		this.initializeGUI();
 		this.initializeDownload();
 		this.initializeEdit();
@@ -54,19 +65,19 @@ public class MenuA3 extends JFrame implements ActionListener{
 		
 	}
 	public static void setVisibility(String componentName,boolean visiblity){
-		if(componentName.equals("_progressBar")){
-			_progressBar.setVisible(visiblity);
+		if(componentName.equals("_processLog")){
+			_processLog.setVisible(visiblity);
 		}
 	}
 	private void initializeEdit(){
 		
 		//Set background color to white
 		_editPanel.setLayout(null);
-	 	_editPanel.setBackground(Color.white);
+	
 	 	
 	 	//set components size and location
 	 	_editButton.setBounds(200, 150, 100, 30);
-	 	_editLabel.setBounds(200, 100, 400, 20);
+	 	_editLabel.setBounds(200, 100, 100, 10);
 	 	
 	 	//Add components to panel
 	 	_editPanel.add(_editLabel);
@@ -74,40 +85,46 @@ public class MenuA3 extends JFrame implements ActionListener{
 
 	}
 	private void initializeDownload(){
-		
 		JLabel copyrightLabel = new JLabel();
+	 	_processLog.setLayout(null);
 		//Set background color to white
 		_downloadPanel.setLayout(null);
-	 	_downloadPanel.setBackground(Color.white);
+	 
 	 	
 	 	//Set size and location for components
 	 	_downloadButton.setBounds(380, 120, 80, 20);
-	 	_cancelButton.setBounds(185,180,100,30);
+	 	_cancelButton.setBounds(100,80,100,30);
 	 	_urlTxt.setBounds(20, 120, 350, 20);
 	 	_urlLabel.setBounds(20, 100, 400, 20);
 	 	_urlLabel.setFont(new Font("Arial",Font.BOLD,14));
 	 	copyrightLabel.setBounds(20,40,400,50);
 	 	copyrightLabel.setText("<html>Please make sure you are only downloading Open-Source file:</html>");
 	 	copyrightLabel.setFont(new Font("Arial",Font.BOLD,16));
-	 	_progressBar.setBounds(12, 150, 470, 20);
+	 	_waitLabel.setBounds(20,10,400,50);
+	 	_waitLabel.setText("<html>Please wait:</html>");
+	 	_waitLabel.setFont(new Font("Arial",Font.BOLD,14));
+	 	_progressBar.setBounds(20, 50, 260, 20);
 	 	_progressBar.setValue(0);
 	 	_progressBar.setMaximum(100);
-	 //	_progressBar.setVisible(false);
-	 	_cancelButton.setVisible(false);
+	
+	 
+	 
 
 	 	//Add actionlisteners to required componenets
 	 	_downloadButton.addActionListener(this);
+	 	_cancelButton.addActionListener(this);
 	 	
-	 	_processLog.setTitle("here");
+	 	_processLog.setTitle("Downloading..");
+	 	JDialog.setDefaultLookAndFeelDecorated(true);
+	 	_processLog.add(_waitLabel);
 	 	_processLog.add(_progressBar);
 	 	_processLog.add(_cancelButton);
-	 	_processLog.setMinimumSize(new Dimension(300,300));
-	 	_processLog.setLocationRelativeTo(this);
-	 	_processLog.setVisible(true);
+	 	_processLog.setMinimumSize(new Dimension(300,150));
+	 	_processLog.setLocationRelativeTo(null);
+	 	_processLog.setVisible(false);
 
+	 	
 		//Add to panel and frame
-	 	_downloadPanel.add(_cancelButton);
-	 	//_downloadPanel.add(_progressBar);
 	 	_downloadPanel.add(copyrightLabel);
 	 	_downloadPanel.add(_urlLabel);
 	 	_downloadPanel.add(_urlTxt);
@@ -130,6 +147,7 @@ public class MenuA3 extends JFrame implements ActionListener{
 	}
 	public static void main(String[] args) {
 		
+		
 		//Set look and feel
         try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -139,18 +157,109 @@ public class MenuA3 extends JFrame implements ActionListener{
 		}
 		new MenuA3();
 	}
+	
+
+	
+	class Download {
+		
+		private String _fileName;
+		private String _url;
+		
+		public Download(String url){
+			String[] tmp = url.split("/");
+			_fileName = tmp[tmp.length-1];
+			_url = url;
+			startDownload();
+		}
+		
+	
+		private void startDownload(){
+			
+			
+			String cmd =  "test -f " + _fileName + " && echo \"found\" || echo \"not found\"";
+			cmd = this.execCmd(cmd);
+			int dialogue = JOptionPane.showConfirmDialog(null, "Please Confirm this is Open-Source file","Open Source?",JOptionPane.YES_NO_OPTION);
+			
+			//Check if open source
+			if(dialogue == JOptionPane.NO_OPTION){
+				JOptionPane.showMessageDialog(null, "Please Download Open-Source file only");
+				return;
+			}
+			//if file found, ask if override or resume
+			if(cmd.equals("found")){
+				//1 is resume, 0 is override
+				int userChoice = JOptionPane.showOptionDialog(null, "File Exists!,Resume or Override?", "Warning!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"Override","Resume"}, "default");
+				
+					//override existing file
+					if(userChoice == 0){
+						cmd = "rm " + _fileName;
+						cmd = this.execCmd(cmd);
+						MenuA3.setVisibility("_processLog",true);
+						MenuA3._task = new SwingDownload(_url);
+						MenuA3._task.execute();
+
+					}
+					//resume existing file
+					else if (userChoice == 1){
+						MenuA3.setVisibility("_processLog",true);
+						MenuA3._task = new SwingDownload(_url);
+						MenuA3._task.execute();
+					}
+			}
+			else{
+				MenuA3.setVisibility("_processLog",true);
+				MenuA3._task = new SwingDownload(_url);
+				MenuA3._task.execute();
+			}
+				
+		}
+
+		private String execCmd(String cmd){
+			try {
+				ProcessBuilder builder = new ProcessBuilder("/bin/bash","-c",cmd);
+				builder.redirectErrorStream(true);
+				
+			
+			
+				_process = builder.start();
+				InputStream stdout = _process.getInputStream();
+				BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
+				String output = stdoutBuffered.readLine();
+				String line = null;
+				while ((line = stdoutBuffered.readLine()) != null ) {
+					output = output + line;
+				}
+				return output;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return cmd;
+		}
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == _downloadButton){
 			if(_urlTxt.getText().equals("")){
-				JOptionPane.showMessageDialog(null,"Please enter a valid url");
+			
+			    JOptionPane.showMessageDialog(null,"Please enter a valid url","ERROR!",JOptionPane.INFORMATION_MESSAGE);
 			}
 			else{
-				new DownloadA3(_urlTxt.getText());
+				_waitLabel.setText("Please wait:");
+				_cancelButton.setText("CANCEL");
+				new Download(_urlTxt.getText());
+			}			
+		}
+		else if(e.getSource() == _cancelButton){
+			
+			if(_task != null && _process != null){
+				_processLog.setVisible(false);
+				
+				_task._cancelled = true;
+				_task._process.destroy();
+				_task.cancel(true);
+			
 			}
-			
-			
 		}
 	}
 
