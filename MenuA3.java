@@ -8,12 +8,15 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,15 +31,18 @@ import javax.swing.plaf.ColorUIResource;
 
 public class MenuA3 extends JFrame implements ActionListener{
 	
-	//initialize all components
-	private JPanel _downloadPanel = new JPanel();
-	private JPanel _editPanel = new JPanel();
+	
+	//Class fields
+	//Tab , copyright warning
 	private JTabbedPane _menuTab = new JTabbedPane();
+
+	//DOWNLOAD panel,buttons,textfield,labels,dialog window
+	//progress bar, swingworker, process
+	private JPanel _downloadPanel = new JPanel();
 	private JButton _downloadButton = new JButton("GO!");
-	private JButton _editButton = new JButton("Edit");
 	private JTextField _urlTxt = new JTextField();
 	private JLabel _urlLabel = new JLabel("Enter url below to downlaod file:");
-	private JLabel _editLabel = new JLabel("Open media file to edit:");
+	private JLabel _copyrightLabelDownload = new JLabel();
 	protected static JProgressBar _progressBar = new JProgressBar();
 	protected static JButton _cancelButton = new JButton("Cancel");
 	protected static JDialog _processLog = new JDialog();
@@ -46,13 +52,23 @@ public class MenuA3 extends JFrame implements ActionListener{
 	private Process _process;
 
 
+	//EDIT panel,button,label,file chooser
+	private JLabel _copyrightLabelEdit = new JLabel();
+	private JPanel _editPanel = new JPanel();
+	private JButton _editButton = new JButton("Edit!");
+	private JButton _fileBrowserButton = new JButton("Browse");
+	private JLabel _editLabel = new JLabel("Open media file to edit:");
+	private JTextField _mediaPath = new JTextField();
+	private JFileChooser _fc = new JFileChooser();
+
+
 	
 	public MenuA3(){
 		
 		this.initializeGUI();
 		this.initializeDownload();
 		this.initializeEdit();
-	
+		
 		//Add tabs
 		_menuTab.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=25 marginheight=5>Download</body></html>",_downloadPanel);
 	 	_menuTab.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=25 marginheight=5>Edit</body></html>",_editPanel);
@@ -64,6 +80,23 @@ public class MenuA3 extends JFrame implements ActionListener{
 		this.setVisible(true);
 		
 	}
+
+	//Get file browser 
+	public String[] pick() throws FileNotFoundException{
+			String[] fileInfo = new String[2];
+		
+			if(_fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+				
+				File file = _fc.getSelectedFile();	
+				fileInfo[0] = file.getName();
+				fileInfo[1] = file.getPath();
+			}
+			else{
+				System.out.println("No file");
+			}
+			return fileInfo;
+	}
+
 	public static void setVisibility(String componentName,boolean visiblity){
 		if(componentName.equals("_processLog")){
 			_processLog.setVisible(visiblity);
@@ -75,31 +108,45 @@ public class MenuA3 extends JFrame implements ActionListener{
 		_editPanel.setLayout(null);
 	
 	 	
+		
 	 	//set components size and location
+		_mediaPath.setEditable(false);
+		_mediaPath.setBounds(20, 120, 350, 20);
 	 	_editButton.setBounds(200, 150, 100, 30);
-	 	_editLabel.setBounds(200, 100, 100, 10);
+	 	_editLabel.setBounds(20, 100, 400, 20);
+	 	_editLabel.setFont(new Font("Arial",Font.BOLD,14));
+	 	_fileBrowserButton.setBounds(380, 117, 80, 25);
+
+	 	
+	 	_copyrightLabelEdit.setBounds(20,40,400,50);
+	 	_copyrightLabelEdit.setText("<html>Please make sure the file is Open-Source:</html>");
+	 	_copyrightLabelEdit.setFont(new Font("Arial",Font.BOLD,16));
+	 	
+	 	//Add actionlisteners to required componenets
+	 	_editButton.addActionListener(this);
+	 	_fileBrowserButton.addActionListener(this);
 	 	
 	 	//Add components to panel
+	 	_editPanel.add(_fileBrowserButton);
+	 	_editPanel.add(_copyrightLabelEdit);
+	 	_editPanel.add(_mediaPath);
 	 	_editPanel.add(_editLabel);
 	 	_editPanel.add(_editButton);
 
 	}
 	private void initializeDownload(){
-		JLabel copyrightLabel = new JLabel();
 	 	_processLog.setLayout(null);
 		//Set background color to white
 		_downloadPanel.setLayout(null);
 	 
 	 	
 	 	//Set size and location for components
-	 	_downloadButton.setBounds(380, 120, 80, 20);
+	 	_downloadButton.setBounds(380, 117, 80, 25);
 	 	_cancelButton.setBounds(100,80,100,30);
 	 	_urlTxt.setBounds(20, 120, 350, 20);
 	 	_urlLabel.setBounds(20, 100, 400, 20);
 	 	_urlLabel.setFont(new Font("Arial",Font.BOLD,14));
-	 	copyrightLabel.setBounds(20,40,400,50);
-	 	copyrightLabel.setText("<html>Please make sure you are only downloading Open-Source file:</html>");
-	 	copyrightLabel.setFont(new Font("Arial",Font.BOLD,16));
+	 
 	 	_waitLabel.setBounds(20,10,400,50);
 	 	_waitLabel.setText("<html>Please wait:</html>");
 	 	_waitLabel.setFont(new Font("Arial",Font.BOLD,14));
@@ -108,12 +155,15 @@ public class MenuA3 extends JFrame implements ActionListener{
 	 	_progressBar.setMaximum(100);
 	
 	 
-	 
+	 	_copyrightLabelDownload.setBounds(20,40,400,50);
+	 	_copyrightLabelDownload.setText("<html>Please make sure the file is Open-Source:</html>");
+	 	_copyrightLabelDownload.setFont(new Font("Arial",Font.BOLD,16));
 
 	 	//Add actionlisteners to required componenets
 	 	_downloadButton.addActionListener(this);
 	 	_cancelButton.addActionListener(this);
 	 	
+	 	//Dialog pop up window
 	 	_processLog.setTitle("Downloading..");
 	 	JDialog.setDefaultLookAndFeelDecorated(true);
 	 	_processLog.add(_waitLabel);
@@ -125,7 +175,7 @@ public class MenuA3 extends JFrame implements ActionListener{
 
 	 	
 		//Add to panel and frame
-	 	_downloadPanel.add(copyrightLabel);
+	 	_downloadPanel.add(_copyrightLabelDownload);
 	 	_downloadPanel.add(_urlLabel);
 	 	_downloadPanel.add(_urlTxt);
 	 	_downloadPanel.add(_downloadButton);
@@ -144,6 +194,9 @@ public class MenuA3 extends JFrame implements ActionListener{
 		
 		this.setLocation(xPos, yPos);
 	 	this.setResizable(true);
+	 	
+		
+	 	
 	}
 	public static void main(String[] args) {
 		
@@ -260,6 +313,22 @@ public class MenuA3 extends JFrame implements ActionListener{
 				_task.cancel(true);
 			
 			}
+		}
+		else if(e.getSource() == _fileBrowserButton){
+			
+			try {
+				_mediaPath.setText(pick()[1]);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			
+		}
+		else if(e.getSource() == _editButton){
+			JOptionPane.showMessageDialog(null, "EDITED!");
+			/**
+			 *  
+			 *  Functionality to be constructed
+			 */
 		}
 	}
 
