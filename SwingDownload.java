@@ -37,7 +37,6 @@ public class SwingDownload extends SwingWorker<Void,Integer> {
 			while ((line = stdoutBuffered.readLine()) != null && !_cancelled ) {
 
 				progress++;
-				System.out.println(line);
 				publish(progress);
 			}
 			
@@ -65,12 +64,13 @@ public class SwingDownload extends SwingWorker<Void,Integer> {
 			MenuA3._cancelButton.setText("CLOSE");
 			MenuA3._waitLabel.setText("DONE!");
 		}
+		//Display Error message
 		else{
 			MenuA3._waitLabel.setText("ERROR!Please Try Again");
 		}
 	}
 
-	
+	//Execute bash command
 	private String execCmd(String cmd){
 		try {
 			ProcessBuilder builder = new ProcessBuilder("/bin/bash","-c",cmd);
