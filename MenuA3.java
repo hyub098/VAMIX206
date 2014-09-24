@@ -24,8 +24,11 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ColorUIResource;
 
 
@@ -84,7 +87,10 @@ public class MenuA3 extends JFrame implements ActionListener{
 	//Get file browser 
 	public String[] pick() throws FileNotFoundException{
 			String[] fileInfo = new String[2];
-		
+			FileFilter videoAudioFilter = new FileNameExtensionFilter("Video/Audio files",new String[] {"avi", "mp4","mp3","wav"} );
+	
+			_fc.setFileFilter(videoAudioFilter);
+			
 			if(_fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 				
 				File file = _fc.getSelectedFile();	
@@ -193,7 +199,7 @@ public class MenuA3 extends JFrame implements ActionListener{
 		int yPos = (dim.height / 2) - (this.getHeight() / 2);
 		
 		this.setLocation(xPos, yPos);
-	 	this.setResizable(true);
+	 	this.setResizable(false);
 	 	
 		
 	 	
@@ -324,11 +330,16 @@ public class MenuA3 extends JFrame implements ActionListener{
 			
 		}
 		else if(e.getSource() == _editButton){
-			JOptionPane.showMessageDialog(null, "EDITED!");
-			/**
-			 *  
-			 *  Functionality to be constructed
-			 */
+			
+			this.setVisible(false);
+			SwingUtilities.invokeLater(new Runnable() {
+	            @Override
+	            public void run() {
+	                new MediaPlayer(_mediaPath.getText());
+	                
+	            }
+	        });
+
 		}
 	}
 
