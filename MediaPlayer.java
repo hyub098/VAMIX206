@@ -54,9 +54,12 @@ public class MediaPlayer implements ActionListener{
     //Edit Options
     private JButton _extractA = new JButton("Extract Audio");
     private JButton _extractV = new JButton("Extract Video");
-    private JButton _save = new JButton("Export");
+    private JButton _export = new JButton("Export");
+    private JButton _save = new JButton("Save Change");
     private JButton _replaceBtn = new JButton("Replace Audio");
     private JButton _mergeBtn = new JButton("Merge Audio");
+    private JButton _undoBtn = new JButton("Undo");
+    private boolean _isSave = false;
     
     //Color Options
     private JButton _colorBtn = new JButton("Color");
@@ -97,7 +100,9 @@ public class MediaPlayer implements ActionListener{
 	protected static JLabel _doneLabel = new JLabel("File Exported!");
 	
 	//Command History
-	
+	File _file = new File(".VAMIX/log.txt");
+	private String _cmd;
+	private ArrayList<String> _cmdHist = new ArrayList<String>();
 	
    
     
@@ -155,9 +160,11 @@ public class MediaPlayer implements ActionListener{
     	this.setButtonSize(_Serif);
     	this.setButtonSize(_Italic);
     	this.setButtonSize(_Bold);
+    	this.setButtonSize(_undoBtn);
     
        
         //Set Button size
+    	this.setButtonSize(_save);
     	this.setButtonSize(_preview);
     	this.setButtonSize(_textBtn);
     	this.setButtonSize(_fontSize);
@@ -165,7 +172,7 @@ public class MediaPlayer implements ActionListener{
         this.setButtonSize(_extractV);
         this.setButtonSize(_mute);
         this.setButtonSize(_extractA);
-        this.setButtonSize(_save);
+        this.setButtonSize(_export);
         this.setButtonSize(_replaceBtn);
         this.setButtonSize(_mergeBtn);
         this.setButtonSize(_fontBtn);
@@ -188,9 +195,10 @@ public class MediaPlayer implements ActionListener{
         _timePlayed.setText("00:00");
        
         //Add ActionListener
+        _undoBtn.addActionListener(this);
         _startTimeBtn.addActionListener(this);
         _endTimeBtn.addActionListener(this);
-        _save.addActionListener(this);
+        _export.addActionListener(this);
         _preview.addActionListener(this);
         _textBtn.addActionListener(this);
         _fontSize.addActionListener(this);
@@ -209,9 +217,12 @@ public class MediaPlayer implements ActionListener{
         _extractA.addActionListener(this);
         _extractV.addActionListener(this);
         _mergeBtn.addActionListener(this);
-
+        _save.addActionListener(this);
+        
         //add to edit panel,adding order relates to display order
+        editPanel.add(_export);
         editPanel.add(_save);
+        editPanel.add(_undoBtn);
         editPanel.add(_replaceBtn);
         editPanel.add(_mergeBtn);
         editPanel.add(_extractA);
@@ -243,7 +254,7 @@ public class MediaPlayer implements ActionListener{
         
         //Set JFrame GUI
         frame.setLocation(100, 100);
-        frame.setSize(1050, 600);
+        frame.setSize(1050, 800);
         frame.setDefaultCloseOperation(MenuA3.EXIT_ON_CLOSE);
         frame.setVisible(true);
         
@@ -277,7 +288,7 @@ public class MediaPlayer implements ActionListener{
     	_fontWindow.setLayout(flow);
     	_fontWindow.setVisible(false);
     	_fontWindow.setMinimumSize(new Dimension(150,150));
-    	
+    	_fontWindow.setLocationRelativeTo(null);
     	_fontWindow.add(_Mono);
     	_fontWindow.add(_Sans);
     	_fontWindow.add(_Serif);
@@ -844,13 +855,31 @@ public class MediaPlayer implements ActionListener{
 			}
 			else{
 				if(_cmdList[4] == null || _cmdList[4].equals("-1")){
-					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x=600: y=300: "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'\" ";
-					System.out.println(cmd);
+					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+					_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+					for(String s:_cmdHist){
+						if(s !=null){
+							cmd = cmd + s;
+						}
+					}
+					cmd = cmd +"\"";
+					_isSave = false;
+
+				//	System.out.println(cmd);
 					cmd = this.execCmd(cmd);
 				}
 				else if(_cmdList[5] == null || _cmdList[5].equals("-1"))
 				{
-					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x=600: y=300: "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'\" ";
+					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+					_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+					for(String s:_cmdHist){
+						if(s !=null){
+							cmd = cmd + s;
+						}
+					}
+					cmd = cmd +"\"";
+					_isSave = false;
+
 					System.out.println(cmd);
 
 					cmd = this.execCmd(cmd);
@@ -979,6 +1008,35 @@ public class MediaPlayer implements ActionListener{
 			
 		}
 		else if(e.getSource() == _save){
+			if(_cmd != null && !_isSave){
+				if(_cmdHist.size() > 0){
+					if(!_cmd.equals(_cmdHist.get((_cmdHist.size()-1)))){
+						_cmdHist.add(_cmd);
+						JOptionPane.showMessageDialog(null, "Saved Change!");
+						_isSave = true;
+					}
+				}
+				
+			}else if(_isSave){
+				JOptionPane.showMessageDialog(null, "No Changes Yet");
+			}
+			else{
+				JOptionPane.showMessageDialog(null, "Please Preview changes first!");
+			}
+			
+			
+			for(String s:_cmdHist){
+				System.out.println(s);
+			}
+		}
+		else if(e.getSource() == _undoBtn){
+			int answer = JOptionPane.showConfirmDialog(null, "This will undo the last SAVED change!!","WARNING!",JOptionPane.OK_CANCEL_OPTION);
+			if(answer == 0){
+				_cmdHist.remove(_cmdHist.size()-1);
+				JOptionPane.showMessageDialog(null, "Undo Successful!");
+			}
+		}
+		else if(e.getSource() == _export){
 			
 			
 		}
