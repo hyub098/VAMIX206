@@ -275,23 +275,11 @@ public class MediaPlayer implements ActionListener{
    //retain history of file if exist
    private void getHistory() throws IOException {
 	   	_file = new File("VAMIXHistory"+File.separator+_fileName+"History.txt");
-		if(!_file.exists()){
-			new File("VAMIXHistory").mkdir();
-			try {
-				_file.createNewFile();
-
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}	
-		}
-		else{
+		if(_file.exists()){
 			BufferedReader br = new BufferedReader(new FileReader(_file));
 			String line;
 			while((line = br.readLine()) != null){
 				_cmdHist.add(line);
-			}
-			for(String s:_cmdHist){
-				System.out.println(s);
 			}
 		}
 	}
@@ -352,9 +340,7 @@ public class MediaPlayer implements ActionListener{
     //Execute bash command
 	private String execCmd(String cmd){
 		try {
-		/*	_waitLabel.setVisible(true);
-			_doneLabel.setVisible(false);
-			_waitWin.setVisible(true);*/
+		
 			ProcessBuilder builder = new ProcessBuilder("/bin/bash","-c",cmd);
 			builder.redirectErrorStream(true);
 		
@@ -367,10 +353,7 @@ public class MediaPlayer implements ActionListener{
 				
 				output = output + line;
 			}
-		/*	_waitLabel.setVisible(false);
-			_doneLabel.setVisible(true);
-			*/
-			
+		
 			return output;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1179,19 +1162,34 @@ public class MediaPlayer implements ActionListener{
 							}
 						}
 						cmd = cmd + "\" -c:a copy "+output+".mp4";
-						_doneLabel.setVisible(false);
+				/*		_doneLabel.setVisible(false);
 						_waitWin.setVisible(true);
 						_waitLabel.setVisible(true);
 
 						_extractTask.setCmd(cmd);
-						_extractTask.execute();
-						
+						_extractTask.execute(); */
+					   	_file = new File("VAMIXHistory"+File.separator+output+"History.txt");
+
+						if(!_file.exists()){
+							new File("VAMIXHistory").mkdir();
+							
+							try {
+								_file.createNewFile();
+
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}	
+						}
 						
 						try {
 							this.writeHist();
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
+					}
+					else{
+						
+						
 					}
 				}
 				else{
@@ -1203,12 +1201,24 @@ public class MediaPlayer implements ActionListener{
 						}
 					}
 					cmd = cmd + "\" -c:a copy "+output+".mp4";
-					_doneLabel.setVisible(false);
+				/*	_doneLabel.setVisible(false);
 					_waitWin.setVisible(true);
 					_waitLabel.setVisible(true);
 
 					_extractTask.setCmd(cmd);
 					_extractTask.execute();
+					*/
+				   	_file = new File("VAMIXHistory"+File.separator+output+"History.txt");
+
+					if(!_file.exists()){
+						new File("VAMIXHistory").mkdir();
+						try {
+							_file.createNewFile();
+
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}	
+					}
 					
 					try {
 						this.writeHist();
