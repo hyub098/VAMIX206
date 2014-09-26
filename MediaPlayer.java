@@ -7,11 +7,12 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -100,7 +101,7 @@ public class MediaPlayer implements ActionListener{
 	protected static JLabel _doneLabel = new JLabel("File Exported!");
 	
 	//Command History
-	File _file = new File(".VAMIX/log.txt");
+	File _file;
 	private String _cmd;
 	private ArrayList<String> _cmdHist = new ArrayList<String>();
 	
@@ -257,8 +258,12 @@ public class MediaPlayer implements ActionListener{
         frame.setSize(1050, 800);
         frame.setDefaultCloseOperation(MenuA3.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        
-     
+        //get history
+        try {
+			this.getHistory();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
         //play video and start timer
        
@@ -267,7 +272,31 @@ public class MediaPlayer implements ActionListener{
  
     }
 
-   //font list
+   //retain history of file if exist
+   private void getHistory() throws IOException {
+	   	_file = new File("VAMIXHistory"+File.separator+_fileName+"History.txt");
+		if(!_file.exists()){
+			new File("VAMIXHistory").mkdir();
+			try {
+				_file.createNewFile();
+
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}	
+		}
+		else{
+			BufferedReader br = new BufferedReader(new FileReader(_file));
+			String line;
+			while((line = br.readLine()) != null){
+				_cmdHist.add(line);
+			}
+			for(String s:_cmdHist){
+				System.out.println(s);
+			}
+		}
+	}
+
+//font list
     private void createFont(){
     	String path = "/usr/share/fonts/truetype/freefont/";
     	_fontList.add(path+"FreeMono.ttf");
@@ -813,6 +842,7 @@ public class MediaPlayer implements ActionListener{
 				}	
 			}
 		}
+		//Allow user to change font size
 		else if(e.getSource() == _fontSize){
 			String size = JOptionPane.showInputDialog("Enter font size(number 1 to 70):");
 			int fontSize = 16;
@@ -832,6 +862,7 @@ public class MediaPlayer implements ActionListener{
 				}
 			}
 		}
+		//Allow text to be added
 		else if(e.getSource() == _textBtn){
 			if(_cmdList[1] != null){
 				String text = JOptionPane.showInputDialog(null, _cmdList[1], "Add Text", JOptionPane.INFORMATION_MESSAGE);
@@ -841,11 +872,9 @@ public class MediaPlayer implements ActionListener{
 				String text = JOptionPane.showInputDialog(null, "Enter Text to add:", "Add Text", JOptionPane.INFORMATION_MESSAGE);
 				_cmdList[1] = text;
 			}
-		}
+		}//preview options, check if inputs all valid, allow time to be chosen
 		else if(e.getSource() == _preview){
-			if(_video.isPlaying()){
-				_video.pause();
-			}
+			
 			if(_cmdList[1] == null){
 				JOptionPane.showMessageDialog(null, "Please Enter text to add!", "Error!", JOptionPane.INFORMATION_MESSAGE);
 			}
@@ -854,6 +883,10 @@ public class MediaPlayer implements ActionListener{
 
 			}
 			else{
+				if(_video.isPlaying()){
+					_video.pause();
+					_playPause.setText(">");
+				}
 				int startTime = 0;
 				int length =(int)_video.getLength()/1000;
 				int min = length/60;
@@ -875,10 +908,10 @@ public class MediaPlayer implements ActionListener{
 											
 											if(_cmdList[4] == null || _cmdList[4].equals("-1")){
 												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
-												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+												_cmd =  "drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
 												for(String s:_cmdHist){
 													if(s !=null){
-														cmd = cmd + s;
+														cmd = cmd + ":," + s;
 													}
 												}
 												cmd = cmd +"\" -ss " + startTime;
@@ -888,10 +921,10 @@ public class MediaPlayer implements ActionListener{
 											else if(_cmdList[5] == null || _cmdList[5].equals("-1"))
 											{
 												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
-												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+												_cmd =  "drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
 												for(String s:_cmdHist){
 													if(s !=null){
-														cmd = cmd + s;
+														cmd = cmd + ":," + s;
 													}
 												}
 												cmd = cmd +"\" -ss " + startTime;
@@ -1121,8 +1154,77 @@ public class MediaPlayer implements ActionListener{
 			}
 		}
 		else if(e.getSource() == _export){
-			
-			
+			if(_cmdHist.size() == 0){
+				JOptionPane.showMessageDialog(null, "No Changes Yet");
+
+			}
+			else{
+				String output = JOptionPane.showInputDialog(null,"Enter Output Video file Name(No File Extension needed):");
+				
+				String cmd =  "test -f " + output+".mp4" + " && echo \"found\" || echo \"not found\"";
+				cmd = this.execCmd(cmd);
+				if(cmd.equals("found")){
+					int userChoice = JOptionPane.showOptionDialog(null, "File Name Exists!,Overwrite?", "Warning!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"Overwrite","Cancel"}, "default");
+					//0 is overwrite 1 is cancel
+					if(userChoice == 0){
+						//remove file
+						cmd = "rm "+output+".mp4";
+						this.execCmd(cmd);
+						
+						cmd = "avconv -i "+_filePath + " -vf \"" + _cmdHist.get(0);
+						for(int i = 1; i <_cmdHist.size();i++){
+							String s = _cmdHist.get(i);
+							if(s != null){
+								cmd = cmd + ":," + s;
+							}
+						}
+						cmd = cmd + "\" -c:a copy "+output+".mp4";
+						_doneLabel.setVisible(false);
+						_waitWin.setVisible(true);
+						_waitLabel.setVisible(true);
+
+						_extractTask.setCmd(cmd);
+						_extractTask.execute();
+						
+						
+						try {
+							this.writeHist();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				else{
+					cmd = "avconv -i "+_filePath + " -vf \"" + _cmdHist.get(0);
+					for(int i = 1; i <_cmdHist.size();i++){
+						String s = _cmdHist.get(i);
+						if(s != null){
+							cmd = cmd + ":," + s;
+						}
+					}
+					cmd = cmd + "\" -c:a copy "+output+".mp4";
+					_doneLabel.setVisible(false);
+					_waitWin.setVisible(true);
+					_waitLabel.setVisible(true);
+
+					_extractTask.setCmd(cmd);
+					_extractTask.execute();
+					
+					try {
+						this.writeHist();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
 		}
-	}		
+	}
+    private void writeHist() throws IOException  {
+    	BufferedWriter writer = new BufferedWriter(new FileWriter(_file,true));
+		for(String s:_cmdHist){
+			writer.append(s);
+			writer.newLine();
+		}
+		writer.close();
+    }
 }
