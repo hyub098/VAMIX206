@@ -854,36 +854,108 @@ public class MediaPlayer implements ActionListener{
 
 			}
 			else{
-				if(_cmdList[4] == null || _cmdList[4].equals("-1")){
-					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
-					_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
-					for(String s:_cmdHist){
-						if(s !=null){
-							cmd = cmd + s;
+				int startTime = 0;
+				int length =(int)_video.getLength()/1000;
+				int min = length/60;
+				int sec = length%60;
+				JOptionPane.showMessageDialog(null, "Enter the time to start previewing.\nPlease enter in order MINUTE -> SECOND.","Readme",JOptionPane.INFORMATION_MESSAGE);
+				String userMin = JOptionPane.showInputDialog(null,"Enter the minute to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
+				if(userMin != null){
+					try{
+						int minGiven = Integer.parseInt(userMin);
+						if(minGiven >= 0 && minGiven <= min){
+							startTime = minGiven*60;
+							String userSec = JOptionPane.showInputDialog(null,"Enter the second to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
+							if(userSec != null){
+								try{
+									int SecGiven = Integer.parseInt(userSec);
+									if(!userMin.equals(min)){
+										if(SecGiven >= 0 && SecGiven < 60){
+											startTime = startTime + SecGiven;
+											
+											if(_cmdList[4] == null || _cmdList[4].equals("-1")){
+												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+												for(String s:_cmdHist){
+													if(s !=null){
+														cmd = cmd + s;
+													}
+												}
+												cmd = cmd +"\" -ss " + startTime;
+												_isSave = false;
+												cmd = this.execCmd(cmd);
+											}
+											else if(_cmdList[5] == null || _cmdList[5].equals("-1"))
+											{
+												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+												for(String s:_cmdHist){
+													if(s !=null){
+														cmd = cmd + s;
+													}
+												}
+												cmd = cmd +"\" -ss " + startTime;
+												_isSave = false;
+												cmd = this.execCmd(cmd);
+											}
+
+
+										}
+										else{
+											JOptionPane.showMessageDialog(null, "Please Enter a number for second less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
+
+										}
+									}
+									else if(userMin.equals(min)){
+										if(SecGiven >= 0 && SecGiven < sec){
+											if(_cmdList[4] == null || _cmdList[4].equals("-1")){
+												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='gt(t,"+_cmdList[5]+")'";
+												for(String s:_cmdHist){
+													if(s !=null){
+														cmd = cmd + s;
+													}
+												}
+												cmd = cmd +"\"";
+												_isSave = false;
+												cmd = this.execCmd(cmd);
+											}
+											else if(_cmdList[5] == null || _cmdList[5].equals("-1"))
+											{
+												String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+												_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
+												for(String s:_cmdHist){
+													if(s !=null){
+														cmd = cmd + s;
+													}
+												}
+												cmd = cmd +"\"";
+												_isSave = false;
+												cmd = this.execCmd(cmd);
+											}
+										}
+										else{
+											JOptionPane.showMessageDialog(null, "Please Enter a number for second less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
+
+										}
+									}
+								}
+								catch(NumberFormatException e1){
+									JOptionPane.showMessageDialog(null, "Please Enter a number for second!","Error!", JOptionPane.INFORMATION_MESSAGE);
+								}
+							}
+						}
+						else{
+							JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+
 						}
 					}
-					cmd = cmd +"\"";
-					_isSave = false;
-
-				//	System.out.println(cmd);
-					cmd = this.execCmd(cmd);
-				}
-				else if(_cmdList[5] == null || _cmdList[5].equals("-1"))
-				{
-					String cmd = "avplay -i "+_filePath + " -vf \"drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
-					_cmd =  ":,drawtext=fontfile='" + _cmdList[0]+"': text='"+_cmdList[1]+"': x='(main_w-text_w)/2': y='(main_h-text_h)/2': "+"fontsize="+_cmdList[2]+": fontcolor='"+_cmdList[3]+"': draw='lt(t,"+_cmdList[4]+")'";
-					for(String s:_cmdHist){
-						if(s !=null){
-							cmd = cmd + s;
-						}
+					catch(NumberFormatException e1){
+						JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 					}
-					cmd = cmd +"\"";
-					_isSave = false;
-
-					System.out.println(cmd);
-
-					cmd = this.execCmd(cmd);
+					
 				}
+				
 				
 			}
 			
@@ -895,14 +967,14 @@ public class MediaPlayer implements ActionListener{
 			int length =(int)_video.getLength()/1000;
 			int min = length/60;
 			int sec = length%60;
-			JOptionPane.showMessageDialog(null, "The text will appear from start of the video to the time given. Please enter in order MINUTE -> SECOND. NOTE:This will set ToEndTime to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
-			String userMin = JOptionPane.showInputDialog(null,"Enter the minute to end text, length of video is:"+min+" minutes "+sec+" seconds");
+			JOptionPane.showMessageDialog(null, "The text will appear from start of the video to the time given.\nPlease enter in order MINUTE -> SECOND.\nNOTE:This will set ToEndTime to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
+			String userMin = JOptionPane.showInputDialog(null,"Enter the minute to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
 			if(userMin != null){
 				try{
 					int minGiven = Integer.parseInt(userMin);
 					if(minGiven >= 0 && minGiven <= min){
 						startTime = minGiven*60;
-						String userSec = JOptionPane.showInputDialog(null,"Enter the second to end text, length of video is:"+min+" minutes "+sec+" seconds");
+						String userSec = JOptionPane.showInputDialog(null,"Enter the second to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
 						if(userSec != null){
 							try{
 								int SecGiven = Integer.parseInt(userSec);
@@ -953,7 +1025,7 @@ public class MediaPlayer implements ActionListener{
 			int length =(int)_video.getLength()/1000;
 			int min = length/60;
 			int sec = length%60;
-			JOptionPane.showMessageDialog(null, "The text will appear from time given to end of the video. Please enter in order MINUTE -> SECOND. NOTE:This will set StartTimeTo to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "The text will appear from time given to end of the video.\nPlease enter in order MINUTE -> SECOND.\nNOTE:This will set StartTimeTo to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
 			String userMin = JOptionPane.showInputDialog(null,"Enter the minute to end text, length of video is:"+min+" minutes "+sec+" seconds");
 			if(userMin != null){
 				try{
@@ -1015,6 +1087,14 @@ public class MediaPlayer implements ActionListener{
 						JOptionPane.showMessageDialog(null, "Saved Change!");
 						_isSave = true;
 					}
+					else{
+						JOptionPane.showMessageDialog(null, "No Changes Yet");
+					}
+				}
+				else{
+					_cmdHist.add(_cmd);
+					JOptionPane.showMessageDialog(null, "Saved Change!");
+					_isSave = true;
 				}
 				
 			}else if(_isSave){
@@ -1024,16 +1104,20 @@ public class MediaPlayer implements ActionListener{
 				JOptionPane.showMessageDialog(null, "Please Preview changes first!");
 			}
 			
-			
-			for(String s:_cmdHist){
-				System.out.println(s);
-			}
 		}
 		else if(e.getSource() == _undoBtn){
 			int answer = JOptionPane.showConfirmDialog(null, "This will undo the last SAVED change!!","WARNING!",JOptionPane.OK_CANCEL_OPTION);
 			if(answer == 0){
-				_cmdHist.remove(_cmdHist.size()-1);
-				JOptionPane.showMessageDialog(null, "Undo Successful!");
+				if(_cmdHist.size() > 0){
+					_cmdHist.remove(_cmdHist.size()-1);
+					_cmdList[1] = null;
+					_cmdList[4] = null;
+					_cmdList[5] = null;
+					JOptionPane.showMessageDialog(null, "Undo Successful!");
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "No Changes Yet");
+				}
 			}
 		}
 		else if(e.getSource() == _export){
