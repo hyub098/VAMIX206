@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -274,13 +275,27 @@ public class MediaPlayer implements ActionListener{
 
    //retain history of file if exist
    private void getHistory() throws IOException {
-	   	_file = new File("VAMIXHistory"+File.separator+_fileName+"History.txt");
+	    String[] fileName = _fileName.split("\\.");
+	   	_file = new File("VAMIXHistory"+File.separator+fileName[0]+"History.txt");
+	   	System.out.println(_file);
 		if(_file.exists()){
-			BufferedReader br = new BufferedReader(new FileReader(_file));
-			String line;
-			while((line = br.readLine()) != null){
-				_cmdHist.add(line);
-			}
+			int userChoice = JOptionPane.showOptionDialog(null, "This file appears to be edited before!\nWould you like to Continue or treat as New?", "Surprise!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"Continue","New"}, "default");
+			//0 is continue 1 is new
+			if(userChoice == 0){
+				JOptionPane.showMessageDialog(null, "Please locate the original source video","Locate File",JOptionPane.INFORMATION_MESSAGE);
+				_filePath = this.pick()[1];
+				if(_filePath != null){
+					BufferedReader br = new BufferedReader(new FileReader(_file));
+					String line;
+					while((line = br.readLine()) != null){
+						_cmdHist.add(line);
+					}
+				}
+				else{
+					JOptionPane.showMessageDialog(null,"ERROR! You must locate the source video!\n Program exiting..","Error!",JOptionPane.INFORMATION_MESSAGE);
+					System.exit(0);
+				}
+			}		
 		}
 	}
 
@@ -316,7 +331,7 @@ public class MediaPlayer implements ActionListener{
 	//Get file browser 
 	private String[] pick() throws FileNotFoundException{
 			String[] fileInfo = new String[2];
-			FileFilter videoAudioFilter = new FileNameExtensionFilter("Audio files",new String[] {"mp3","wav"} );
+			FileFilter videoAudioFilter = new FileNameExtensionFilter("Video/Audio files",new String[] {"mp3","wav","mp4","avi"} );
 	
 			_fc.setFileFilter(videoAudioFilter);
 			
@@ -867,13 +882,13 @@ public class MediaPlayer implements ActionListener{
 				int min = length/60;
 				int sec = length%60;
 				JOptionPane.showMessageDialog(null, "Enter the time to start previewing.\nPlease enter in order MINUTE -> SECOND.","Readme",JOptionPane.INFORMATION_MESSAGE);
-				String userMin = JOptionPane.showInputDialog(null,"Enter the minute to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
+				String userMin = JOptionPane.showInputDialog(null,"Enter the MINUTE to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
 				if(userMin != null){
 					try{
 						int minGiven = Integer.parseInt(userMin);
 						if(minGiven >= 0 && minGiven <= min){
 							startTime = minGiven*60;
-							String userSec = JOptionPane.showInputDialog(null,"Enter the second to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
+							String userSec = JOptionPane.showInputDialog(null,"Enter the SECOND to start previewing.\nLength of video is:"+min+" minutes "+sec+" seconds");
 							if(userSec != null){
 								try{
 									int SecGiven = Integer.parseInt(userSec);
@@ -910,7 +925,7 @@ public class MediaPlayer implements ActionListener{
 
 										}
 										else{
-											JOptionPane.showMessageDialog(null, "Please Enter a number for second less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
+											JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 										}
 									}
@@ -943,23 +958,23 @@ public class MediaPlayer implements ActionListener{
 											}
 										}
 										else{
-											JOptionPane.showMessageDialog(null, "Please Enter a number for second less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
+											JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 										}
 									}
 								}
 								catch(NumberFormatException e1){
-									JOptionPane.showMessageDialog(null, "Please Enter a number for second!","Error!", JOptionPane.INFORMATION_MESSAGE);
+									JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND!","Error!", JOptionPane.INFORMATION_MESSAGE);
 								}
 							}
 						}
 						else{
-							JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 						}
 					}
 					catch(NumberFormatException e1){
-						JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 					}
 					
 				}
@@ -976,13 +991,13 @@ public class MediaPlayer implements ActionListener{
 			int min = length/60;
 			int sec = length%60;
 			JOptionPane.showMessageDialog(null, "The text will appear from start of the video to the time given.\nPlease enter in order MINUTE -> SECOND.\nNOTE:This will set ToEndTime to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
-			String userMin = JOptionPane.showInputDialog(null,"Enter the minute to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
+			String userMin = JOptionPane.showInputDialog(null,"Enter the MINUTE to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
 			if(userMin != null){
 				try{
 					int minGiven = Integer.parseInt(userMin);
 					if(minGiven >= 0 && minGiven <= min){
 						startTime = minGiven*60;
-						String userSec = JOptionPane.showInputDialog(null,"Enter the second to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
+						String userSec = JOptionPane.showInputDialog(null,"Enter the SECOND to end text.\nLength of video is:"+min+" minutes "+sec+" seconds");
 						if(userSec != null){
 							try{
 								int SecGiven = Integer.parseInt(userSec);
@@ -994,7 +1009,7 @@ public class MediaPlayer implements ActionListener{
 
 									}
 									else{
-										JOptionPane.showMessageDialog(null, "Please Enter a number for second less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 									}
 								}
@@ -1005,23 +1020,23 @@ public class MediaPlayer implements ActionListener{
 										_cmdList[5] = "-1";
 									}
 									else{
-										JOptionPane.showMessageDialog(null, "Please Enter a number for second less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 									}
 								}
 							}
 							catch(NumberFormatException e1){
-								JOptionPane.showMessageDialog(null, "Please Enter a number for second!","Error!", JOptionPane.INFORMATION_MESSAGE);
+								JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND!","Error!", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
 					}
 					else{
-						JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 					}
 				}
 				catch(NumberFormatException e1){
-					JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 				}
 				
 			}
@@ -1034,13 +1049,13 @@ public class MediaPlayer implements ActionListener{
 			int min = length/60;
 			int sec = length%60;
 			JOptionPane.showMessageDialog(null, "The text will appear from time given to end of the video.\nPlease enter in order MINUTE -> SECOND.\nNOTE:This will set StartTimeTo to 0!","Readme",JOptionPane.INFORMATION_MESSAGE);
-			String userMin = JOptionPane.showInputDialog(null,"Enter the minute to end text, length of video is:"+min+" minutes "+sec+" seconds");
+			String userMin = JOptionPane.showInputDialog(null,"Enter the MINUTE to end text, length of video is:"+min+" minutes "+sec+" seconds");
 			if(userMin != null){
 				try{
 					int minGiven = Integer.parseInt(userMin);
 					if(minGiven >= 0 && minGiven <= min){
 						startTime = minGiven*60;
-						String userSec = JOptionPane.showInputDialog(null,"Enter the second to end text, length of video is:"+min+" minutes "+sec+" seconds");
+						String userSec = JOptionPane.showInputDialog(null,"Enter the SECOND to end text, length of video is:"+min+" minutes "+sec+" seconds");
 						if(userSec != null){
 							try{
 								int SecGiven = Integer.parseInt(userSec);
@@ -1053,7 +1068,7 @@ public class MediaPlayer implements ActionListener{
 
 									}
 									else{
-										JOptionPane.showMessageDialog(null, "Please Enter a number for second less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than 60", "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 									}
 								}
@@ -1065,23 +1080,23 @@ public class MediaPlayer implements ActionListener{
 										
 									}
 									else{
-										JOptionPane.showMessageDialog(null, "Please Enter a number for second less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
+										JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND less than "+sec, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 									}
 								}
 							}
 							catch(NumberFormatException e1){
-								JOptionPane.showMessageDialog(null, "Please Enter a number for second!","Error!", JOptionPane.INFORMATION_MESSAGE);
+								JOptionPane.showMessageDialog(null, "Please Enter a number for SECOND!","Error!", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
 					}
 					else{
-						JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 
 					}
 				}
 				catch(NumberFormatException e1){
-					JOptionPane.showMessageDialog(null, "Please Enter a number for minute less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Please Enter a number for MINUTE less than "+min, "Error!", JOptionPane.INFORMATION_MESSAGE);
 				}
 				
 			}
@@ -1154,12 +1169,12 @@ public class MediaPlayer implements ActionListener{
 							}
 						}
 						cmd = cmd + "\" -c:a copy "+output+".mp4";
-				/*		_doneLabel.setVisible(false);
+						_doneLabel.setVisible(false);
 						_waitWin.setVisible(true);
 						_waitLabel.setVisible(true);
 
 						_extractTask.setCmd(cmd);
-						_extractTask.execute(); */
+						_extractTask.execute(); 
 					   	_file = new File("VAMIXHistory"+File.separator+output+"History.txt");
 
 						if(!_file.exists()){
@@ -1179,10 +1194,6 @@ public class MediaPlayer implements ActionListener{
 							e1.printStackTrace();
 						}
 					}
-					else{
-						
-						
-					}
 				}
 				else{
 					cmd = "avconv -i "+_filePath + " -vf \"" + _cmdHist.get(0);
@@ -1193,13 +1204,13 @@ public class MediaPlayer implements ActionListener{
 						}
 					}
 					cmd = cmd + "\" -c:a copy "+output+".mp4";
-				/*	_doneLabel.setVisible(false);
+					_doneLabel.setVisible(false);
 					_waitWin.setVisible(true);
 					_waitLabel.setVisible(true);
 
 					_extractTask.setCmd(cmd);
 					_extractTask.execute();
-					*/
+					
 				   	_file = new File("VAMIXHistory"+File.separator+output+"History.txt");
 
 					if(!_file.exists()){
@@ -1222,11 +1233,20 @@ public class MediaPlayer implements ActionListener{
 		}
 	}
     private void writeHist() throws IOException  {
+    	_file.delete();
     	BufferedWriter writer = new BufferedWriter(new FileWriter(_file,true));
-		for(String s:_cmdHist){
+    	
+    	HashSet hs = new HashSet();
+    	hs.addAll(_cmdHist);
+    	_cmdHist.clear();
+    	_cmdHist.addAll(hs);
+    	
+    	writer.write("");
+    	
+    	for(String s:_cmdHist){
 			writer.append(s);
 			writer.newLine();
-		}
+		} 
 		writer.close();
     }
 }
