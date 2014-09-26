@@ -393,14 +393,6 @@ public class MediaPlayer implements ActionListener{
     	}
     }
     
-  //write to file
-  	protected static void AddHistory(String toBeAdded) throws IOException{
-
-  		//	BufferedWriter writer = new BufferedWriter(new FileWriter(Menu._file,true));
-  		//	writer.append(toBeAdded);
-  		//	writer.close();
-  		
-  	}
   	
     //convert decimal to Hex
     public String convert(int n) {
