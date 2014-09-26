@@ -304,6 +304,7 @@ public class MenuA3 extends JFrame implements ActionListener{
 			    JOptionPane.showMessageDialog(null,"Please enter a valid url","ERROR!",JOptionPane.INFORMATION_MESSAGE);
 			}
 			else{
+				
 				_waitLabel.setText("Please wait:");
 				_cancelButton.setText("CANCEL");
 				new Download(_urlTxt.getText());
@@ -330,15 +331,20 @@ public class MenuA3 extends JFrame implements ActionListener{
 			
 		}
 		else if(e.getSource() == _editButton){
-			
-			this.setVisible(false);
-			SwingUtilities.invokeLater(new Runnable() {
-	            @Override
-	            public void run() {
-	                new MediaPlayer(_mediaPath.getText());
-	                
-	            }
-	        });
+			if(_mediaPath.getText().length() > 0){
+				this.setVisible(false);
+				
+				SwingUtilities.invokeLater(new Runnable() {
+		            @Override
+		            public void run() {
+		                new MediaPlayer(_mediaPath.getText());
+		                
+		            }
+		        });
+			}
+			else{
+				JOptionPane.showMessageDialog(null, "Please Choose a video or audio file!");
+			}
 
 		}
 	}
